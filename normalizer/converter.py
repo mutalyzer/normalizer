@@ -7,10 +7,10 @@ def get_indexing_shift(indexing='internal'):
     Derive the correct shift to be used when applying the provided indexing.
     """
     if indexing == 'internal':
-        shift = -1
+        return -1
     elif indexing == 'hgvs':
-        shift = +1
-    return shift
+        return 1
+    return 0
 
 
 def point_to_range(point_location):
@@ -37,8 +37,7 @@ def range_to_point(range_location):
     if get_start(range_location) == get_end(range_location):
         return {'type': 'point',
                 'position': get_start(range_location)}
-    else:
-        return range_location
+    return range_location
 
 
 def convert_location_index(location, variant_type=None, indexing='internal'):
