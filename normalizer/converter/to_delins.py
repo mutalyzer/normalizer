@@ -27,7 +27,6 @@ def duplication_to_delins(variant):
 
 
 def repeat_to_delins(variant):
-    print(variant)
     new_variant = copy.deepcopy(variant)
     new_variant["type"] = "deletion_insertion"
 
