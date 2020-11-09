@@ -27,6 +27,23 @@ def update_inserted_with_sequences(inserted, sequences):
             ]
 
 
+def seq2repeats(input):
+    for i in range(1, len(input) + 1):
+        for j in range(1, len(input) + 1):
+            if i * j == len(input):
+                if input[:j] * i == input:
+                    yield(input[:j], i)
+                break
+
+def seq_present_before(observed, ins_seq, start, end):
+
+    for repeat, i in seq2repeats(ins_seq):
+        if observed[start - len(repeat): end] == repeat:
+            print(f"found repeat: {repeat}")
+            return repeat, i + 1
+
+    return "", 0
+
 def de_to_hgvs(variants, sequences=None):
     """
     Convert the variants to an HGVS format (e.g., a deletion insertion
@@ -59,6 +76,10 @@ def de_to_hgvs(variants, sequences=None):
                 new_variant["location"]["start"]["position"] += shift3
                 new_variant["location"]["end"]["position"] += shift3
 
+                repeat_seq, repeat_number = seq_present_before(sequences["observed"], ins_seq,
+                                   get_start(variant["location"]),
+                                   get_end(variant["location"]))
+
                 if (
                     sequences["observed"][
                         get_start(variant["location"])
@@ -69,6 +90,15 @@ def de_to_hgvs(variants, sequences=None):
                     new_variant["type"] = "duplication"
                     new_variant["location"]["start"]["position"] = (
                         get_start(new_variant["location"]) - ins_length
+                    )
+                elif len(repeat_seq) > 0:
+                    new_variant["type"] = "repeat"
+                    new_variant["inserted"][0]["repeat_number"] = {"value": repeat_number}
+                    new_variant["inserted"][0]["location"]["end"]["position"] = \
+                        get_start(new_variant["location"]) + len(repeat_seq)
+                    variant["inserted"][0]["source"] = "description"
+                    new_variant["location"]["start"]["position"] = (
+                        get_start(new_variant["location"]) - len(repeat_seq)
                     )
                 else:
                     new_variant["type"] = "insertion"
